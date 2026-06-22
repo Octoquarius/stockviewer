@@ -40,6 +40,14 @@ export function ProductCard({
             alt={product.title}
             className="w-full h-40 sm:h-full object-cover"
             loading="lazy"
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.dataset.fallback) return;
+              img.dataset.fallback = "1";
+              img.src = `https://picsum.photos/seed/${encodeURIComponent(
+                product.site + product.title,
+              )}/400/400`;
+            }}
           />
         </div>
 

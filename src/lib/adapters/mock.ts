@@ -98,7 +98,41 @@ function titleCase(s: string): string {
     .join(" ");
 }
 
-const PICSUM = (seed: string) => `https://picsum.photos/seed/${encodeURIComponent(seed)}/400/400`;
+// Kategoriye uygun, deterministik ürün görseli. Küratörlü Unsplash CDN
+// görselleri (kalıcı, hızlı, anahtar gerektirmez); seed'e göre seçilir.
+const CATEGORY_IMAGES: Record<Category, string[]> = {
+  clothing: [
+    "photo-1521572163474-6864f9cf17ab",
+    "photo-1576566588028-4147f3842f27",
+    "photo-1620799140408-edc6dcb6d633",
+    "photo-1556905055-8f358a7a47b2",
+    "photo-1503342217505-b0a15ec3261c",
+  ],
+  shoes: [
+    "photo-1542291026-7eec264c27ff",
+    "photo-1595950653106-6c9ebd614d3a",
+    "photo-1460353581641-37baddab0fa2",
+    "photo-1551107696-a4b0c5a0d9a2",
+    "photo-1491553895911-0055eca6402d",
+  ],
+  bag: [
+    "photo-1584917865442-de89df76afd3",
+    "photo-1548036328-c9fa89d128fa",
+    "photo-1591561954557-26941169b49e",
+    "photo-1566150905458-1bf1fc113f0d",
+  ],
+  tech: [
+    "photo-1511707171634-5f897ff02aa9",
+    "photo-1517336714731-489689fd1ca8",
+    "photo-1496181133206-80ce9b88a853",
+  ],
+};
+
+function productImage(category: Category, seed: number): string {
+  const pool = CATEGORY_IMAGES[category];
+  const id = pool[seed % pool.length];
+  return `https://images.unsplash.com/${id}?w=400&h=400&fit=crop`;
+}
 
 /**
  * Mock adapter fabrikası. Verilen site için, aramanın o sitede bulunup
@@ -125,7 +159,7 @@ export function createMockAdapter(siteKey: string): SiteAdapter {
         {
           site: siteKey,
           title: code ? `${title} (${code})` : title,
-          imageUrl: PICSUM(`${siteKey}-${query}`),
+          imageUrl: productImage(category, seed),
           productUrl: `https://www.${siteKey}.com/arama?q=${encodeURIComponent(query)}`,
           category,
           brand: meta.name,
