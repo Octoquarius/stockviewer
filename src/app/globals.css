@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Warm, sweet, inviting palette */
+  --background: #fff8f4;
+  --surface: #ffffff;
+  --foreground: #2b2733;
+  --muted: #8b8694;
+  --border: #f0e6df;
+
+  /* Coral primary + soft purple secondary */
+  --primary: #ff6b6b;
+  --primary-strong: #f0504f;
+  --primary-soft: #ffe6e2;
+  --secondary: #8b7fd6;
+  --secondary-soft: #ece8fb;
+
+  /* Stock status */
+  --in-stock: #16a34a;
+  --low-stock: #f59e0b;
+  --out-stock: #ef4444;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-in-stock: var(--in-stock);
+  --color-low-stock: var(--low-stock);
+  --color-out-stock: var(--out-stock);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --radius-xl: 1.25rem;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1200px 600px at 100% -10%, var(--primary-soft) 0%, transparent 55%),
+    radial-gradient(900px 500px at -10% 0%, var(--secondary-soft) 0%, transparent 50%),
+    var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Subtle scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }

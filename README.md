@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# StockViewer 🛍️
 
-## Getting Started
+Kıyafet, ayakkabı ve çanta başta olmak üzere ürünleri **tüm sitelerde tek ekranda** ara;
+fiyatı ve **beden/numara bazında stoğu** gör, tükendiyse **bildirim** aç (tarayıcı push + e-posta).
 
-First, run the development server:
+> Ana akış: **giriş → ürün adı + kod ile ara → ürünün satıldığı tüm siteler liste halinde → stok/beden → bildirim aç.**
+
+## Çalıştırma
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Anahtar olmadan da çalışır: **demo modunda** takip listesi ve bildirim kuralları
+tarayıcıda (localStorage) saklanır, push izni alınır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Ortam değişkenleri (`.env.local`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Değişken | Ne için | Durum |
+|----------|---------|-------|
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Web Push | ✅ otomatik üretildi |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Auth + kalıcılık | ⏳ Supabase projesi gerekiyor |
+| `RESEND_API_KEY`, `RESEND_FROM` | E-posta bildirimi | ⏳ Resend anahtarı gerekiyor |
+| `CRON_SECRET` | Cron koruması | rastgele bir değer ver |
 
-## Learn More
+### Supabase kurulumu
+1. https://supabase.com/dashboard → yeni proje.
+2. `supabase/migrations/0001_init.sql` içeriğini SQL Editor'da çalıştır (tablolar + RLS).
+3. Project Settings → API'den URL ve anahtarları `.env.local`'e yaz.
 
-To learn more about Next.js, take a look at the following resources:
+## Mimari
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Arama**: `src/lib/adapters/` — her site bir `SiteAdapter` (`search` + `scrape`).
+  Şu an tümü **mock** veri döndürür; gerçek scraping Kademe 1→3 sırasıyla eklenecek
+  (Trendyol, Hepsiburada, LC Waikiki, DeFacto, Koton, Boyner → ...).
+- **UI**: `src/components/` — arama, sonuç kartı, beden/numara matrisi, bildirim modalı.
+- **Kalıcılık**: `src/lib/store.tsx` — Supabase varsa Postgres, yoksa localStorage.
+- **Bildirim**: `src/app/api/cron/check-stock` (Vercel Cron, 30 dk) + `src/lib/notify.ts`
+  (web-push + Resend) + `public/sw.js` (service worker).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ayrıntılı plan: [`plan.md`](./plan.md).
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Dağıtım (Vercel)
+`vercel.json` cron'u tanımlar. Ortam değişkenlerini Vercel projesine ekleyip deploy et.
