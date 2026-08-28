@@ -1,45 +1,45 @@
 # StockViewer 🛍️
 
-Kıyafet, ayakkabı ve çanta başta olmak üzere ürünleri **tüm sitelerde tek ekranda** ara;
-fiyatı ve **beden/numara bazında stoğu** gör, tükendiyse **bildirim** aç (tarayıcı push + e-posta).
+Search clothing, shoes, and bags — among other products — **across every site on one screen**;
+see the price and **stock by size/number**, and turn on a **notification** if it's out of stock (browser push + email).
 
-> Ana akış: **giriş → ürün adı + kod ile ara → ürünün satıldığı tüm siteler liste halinde → stok/beden → bildirim aç.**
+> Main flow: **sign in → search by product name + code → every site that sells the product listed → stock/size → turn on notification.**
 
-## Çalıştırma
+## Running it
 
 ```bash
 npm install
 npm run dev      # http://localhost:3000
 ```
 
-Anahtar olmadan da çalışır: **demo modunda** takip listesi ve bildirim kuralları
-tarayıcıda (localStorage) saklanır, push izni alınır.
+It also works without any keys: in **demo mode**, the tracking list and notification rules
+are stored in the browser (localStorage), and push permission is requested locally.
 
-## Ortam değişkenleri (`.env.local`)
+## Environment variables (`.env.local`)
 
-| Değişken | Ne için | Durum |
+| Variable | What it's for | Status |
 |----------|---------|-------|
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Web Push | ✅ otomatik üretildi |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Auth + kalıcılık | ⏳ Supabase projesi gerekiyor |
-| `RESEND_API_KEY`, `RESEND_FROM` | E-posta bildirimi | ⏳ Resend anahtarı gerekiyor |
-| `CRON_SECRET` | Cron koruması | rastgele bir değer ver |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Web Push | ✅ auto-generated |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Auth + persistence | ⏳ requires a Supabase project |
+| `RESEND_API_KEY`, `RESEND_FROM` | Email notifications | ⏳ requires a Resend key |
+| `CRON_SECRET` | Cron protection | give it a random value |
 
-### Supabase kurulumu
-1. https://supabase.com/dashboard → yeni proje.
-2. `supabase/migrations/0001_init.sql` içeriğini SQL Editor'da çalıştır (tablolar + RLS).
-3. Project Settings → API'den URL ve anahtarları `.env.local`'e yaz.
+### Supabase setup
+1. https://supabase.com/dashboard → new project.
+2. Run the contents of `supabase/migrations/0001_init.sql` in the SQL Editor (tables + RLS).
+3. Copy the URL and keys from Project Settings → API into `.env.local`.
 
-## Mimari
+## Architecture
 
-- **Arama**: `src/lib/adapters/` — her site bir `SiteAdapter` (`search` + `scrape`).
-  Şu an tümü **mock** veri döndürür; gerçek scraping Kademe 1→3 sırasıyla eklenecek
+- **Search**: `src/lib/adapters/` — each site is a `SiteAdapter` (`search` + `scrape`).
+  All of them currently return **mock** data; real scraping will be added in Tier 1→3 order
   (Trendyol, Hepsiburada, LC Waikiki, DeFacto, Koton, Boyner → ...).
-- **UI**: `src/components/` — arama, sonuç kartı, beden/numara matrisi, bildirim modalı.
-- **Kalıcılık**: `src/lib/store.tsx` — Supabase varsa Postgres, yoksa localStorage.
-- **Bildirim**: `src/app/api/cron/check-stock` (Vercel Cron, 30 dk) + `src/lib/notify.ts`
+- **UI**: `src/components/` — search, result card, size/number matrix, notification modal.
+- **Persistence**: `src/lib/store.tsx` — Postgres if Supabase is configured, otherwise localStorage.
+- **Notifications**: `src/app/api/cron/check-stock` (Vercel Cron, every 30 min) + `src/lib/notify.ts`
   (web-push + Resend) + `public/sw.js` (service worker).
 
-Ayrıntılı plan: [`plan.md`](./plan.md).
+Detailed plan: [`plan.md`](./plan.md).
 
-## Dağıtım (Vercel)
-`vercel.json` cron'u tanımlar. Ortam değişkenlerini Vercel projesine ekleyip deploy et.
+## Deployment (Vercel)
+`vercel.json` defines the cron job. Add the environment variables to the Vercel project and deploy.

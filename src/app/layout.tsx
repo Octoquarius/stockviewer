@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StockViewer — Tüm sitelerde stok & fiyat takibi",
+  title: "StockViewer — Stock & price tracking across every site",
   description:
-    "Kıyafet, ayakkabı ve çanta stoklarını tüm sitelerde tek ekranda ara; beden/numara bazında stok ve fiyatı gör, stok gelince bildirim al.",
+    "Search clothing, shoe, and bag stock across every site on one screen; see stock and price by size/number, and get notified when it's back in stock.",
   icons: { icon: "/icon.svg" },
 };
 
@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="tr"
+      lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
@@ -40,7 +40,7 @@ export default function RootLayout({
               {children}
             </main>
             <footer className="border-t border-border/70 py-6 text-center text-sm text-muted">
-              StockViewer · Stokta bulamadığın ürünleri tek yerden takip et 🛍️
+              StockViewer · Track products you couldn&apos;t find in stock, all in one place 🛍️
             </footer>
           </StoreProvider>
         </AuthProvider>

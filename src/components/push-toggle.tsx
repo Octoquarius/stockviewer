@@ -24,7 +24,7 @@ export function PushToggle() {
   if (state === "unsupported") {
     return (
       <div className="rounded-2xl border border-border bg-surface p-4 text-sm text-muted">
-        ⚠️ Tarayıcın push bildirimi desteklemiyor. E-posta bildirimleri yine çalışır.
+        ⚠️ Your browser doesn&apos;t support push notifications. Email notifications will still work.
       </div>
     );
   }
@@ -34,8 +34,8 @@ export function PushToggle() {
       <div className="rounded-2xl border border-[var(--in-stock)]/30 bg-green-50 p-4 flex items-center gap-3">
         <span className="text-xl">🔔</span>
         <div className="text-sm">
-          <p className="font-semibold text-[var(--in-stock)]">Tarayıcı bildirimleri açık</p>
-          <p className="text-muted">Stok/fiyat değişince anında haber alacaksın.</p>
+          <p className="font-semibold text-[var(--in-stock)]">Browser notifications are on</p>
+          <p className="text-muted">You&apos;ll get notified instantly when stock or price changes.</p>
         </div>
       </div>
     );
@@ -45,11 +45,11 @@ export function PushToggle() {
     <div className="rounded-2xl border border-primary/30 bg-primary-soft p-4 flex items-center gap-3">
       <span className="text-xl">🔕</span>
       <div className="text-sm flex-1">
-        <p className="font-semibold">Tarayıcı bildirimlerini aç</p>
+        <p className="font-semibold">Turn on browser notifications</p>
         <p className="text-muted">
           {state === "denied"
-            ? "İzin reddedilmiş — tarayıcı ayarlarından açabilirsin."
-            : "Site kapalıyken bile stok gelince bildirim al."}
+            ? "Permission was denied — you can enable it from your browser settings."
+            : "Get notified when stock arrives, even while the site is closed."}
         </p>
       </div>
       <button
@@ -57,7 +57,7 @@ export function PushToggle() {
         disabled={busy || state === "denied"}
         className="rounded-full bg-primary text-white px-4 py-2 text-sm font-semibold shadow-sm shadow-primary/30 hover:bg-primary-strong disabled:opacity-50"
       >
-        {busy ? "…" : "İzin Ver"}
+        {busy ? "…" : "Allow"}
       </button>
     </div>
   );

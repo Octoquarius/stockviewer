@@ -1,4 +1,4 @@
-// StockViewer service worker — push bildirimlerini gösterir.
+// StockViewer service worker — displays push notifications.
 
 self.addEventListener("push", (event) => {
   let data = {};
@@ -10,7 +10,7 @@ self.addEventListener("push", (event) => {
 
   const title = data.title || "StockViewer";
   const options = {
-    body: data.body || "Stok veya fiyat güncellendi.",
+    body: data.body || "Stock or price was updated.",
     icon: data.icon || "/icon.svg",
     badge: "/icon.svg",
     data: { url: data.url || "/" },

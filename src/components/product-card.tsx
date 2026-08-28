@@ -61,7 +61,7 @@ export function ProductCard({
               <h3 className="font-semibold leading-tight">{product.title}</h3>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-xs text-muted">en düşük</div>
+              <div className="text-xs text-muted">lowest</div>
               <div className="text-xl font-bold text-primary-strong">
                 {formatPrice(price)}
               </div>
@@ -78,7 +78,7 @@ export function ProductCard({
               onClick={() => onNotify(product)}
               className="inline-flex items-center gap-1.5 rounded-full bg-primary text-white px-3.5 py-2 text-sm font-semibold shadow-sm shadow-primary/30 hover:bg-primary-strong"
             >
-              🔔 Bildirim Aç
+              🔔 Notify
             </button>
             <button
               onClick={toggleTrack}
@@ -88,7 +88,7 @@ export function ProductCard({
                   : "border-border hover:bg-background"
               }`}
             >
-              {tracking ? "★ Takipte" : "☆ Takip Et"}
+              {tracking ? "★ Tracking" : "☆ Track"}
             </button>
             <a
               href={product.productUrl}
@@ -96,7 +96,7 @@ export function ProductCard({
               rel="noopener noreferrer"
               className="ml-auto text-sm font-medium text-muted hover:text-foreground"
             >
-              Siteye git ↗
+              Go to site ↗
             </a>
           </div>
         </div>

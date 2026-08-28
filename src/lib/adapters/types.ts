@@ -1,16 +1,16 @@
 import type { ProductResult } from "@/lib/types";
 
 /**
- * Her e-ticaret sitesi bu arayüze uyan bir adapter ile temsil edilir.
- * - `search`: birincil akış — ürün adı + (opsiyonel) kod ile site içinde arama.
- * - `scrape`: ikincil akış — tek ürün URL'sinden detay çıkarımı.
+ * Each e-commerce site is represented by an adapter conforming to this interface.
+ * - `search`: primary flow — search within the site by product name + (optional) code.
+ * - `scrape`: secondary flow — extract details from a single product URL.
  *
- * Mock fazında her ikisi de sahte veri döndürür; gerçek fazda Cheerio/Playwright
- * ile sitenin arama sonucu / ürün sayfası parse edilir.
+ * In the mock phase both return fake data; in the real phase, Cheerio/Playwright
+ * parses the site's search results / product page.
  */
 export interface SiteAdapter {
   site: string;
-  /** Bu URL bu siteye mi ait? (scrape yönlendirmesi için) */
+  /** Does this URL belong to this site? (used for scrape routing) */
   match(url: string): boolean;
   search(query: string, code?: string): Promise<ProductResult[]>;
   scrape(url: string): Promise<ProductResult | null>;

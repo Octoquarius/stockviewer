@@ -1,7 +1,7 @@
--- StockViewer şeması (plan.md Bölüm 3) + Row Level Security
--- Supabase SQL Editor'da ya da `supabase db push` ile çalıştırılır.
+-- StockViewer schema (plan.md Section 3) + Row Level Security
+-- Run this in the Supabase SQL Editor or via `supabase db push`.
 
--- Takip edilen ürünler ----------------------------------------------------
+-- Tracked products ----------------------------------------------------
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -16,7 +16,7 @@ create table if not exists public.products (
   unique (user_id, site, title)
 );
 
--- Varyantlar (beden/numara/renk) ------------------------------------------
+-- Variants (size/number/color) ---------------------------------------------
 create table if not exists public.variants (
   id uuid primary key default gen_random_uuid(),
   product_id uuid not null references public.products (id) on delete cascade,
@@ -29,7 +29,7 @@ create table if not exists public.variants (
 );
 create index if not exists variants_product_idx on public.variants (product_id);
 
--- Fiyat geçmişi -----------------------------------------------------------
+-- Price history -------------------------------------------------------------
 create table if not exists public.price_history (
   id uuid primary key default gen_random_uuid(),
   variant_id uuid not null references public.variants (id) on delete cascade,
@@ -38,7 +38,7 @@ create table if not exists public.price_history (
 );
 create index if not exists price_history_variant_idx on public.price_history (variant_id);
 
--- Bildirim kuralları ------------------------------------------------------
+-- Notification rules --------------------------------------------------------
 create table if not exists public.notifications (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -55,7 +55,7 @@ create table if not exists public.notifications (
 create index if not exists notifications_user_idx on public.notifications (user_id);
 create index if not exists notifications_active_idx on public.notifications (is_active);
 
--- Push abonelikleri -------------------------------------------------------
+-- Push subscriptions ---------------------------------------------------------
 create table if not exists public.push_subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -65,17 +65,17 @@ create table if not exists public.push_subscriptions (
   created_at timestamptz not null default now()
 );
 
--- Gönderilen bildirim kaydı (tekrar engelleme) ----------------------------
+-- Sent-notification log (prevents duplicates) --------------------------------
 create table if not exists public.notification_log (
   id uuid primary key default gen_random_uuid(),
   notification_id uuid not null references public.notifications (id) on delete cascade,
-  event_key text not null,            -- ör. "back_in_stock:M" — aynı olay 1 kez
+  event_key text not null,            -- e.g. "back_in_stock:M" — same event only once
   sent_at timestamptz not null default now(),
   status text not null default 'sent',
   unique (notification_id, event_key)
 );
 
--- Row Level Security ------------------------------------------------------
+-- Row Level Security -----------------------------------------------------------
 alter table public.products            enable row level security;
 alter table public.variants            enable row level security;
 alter table public.price_history       enable row level security;
@@ -83,7 +83,7 @@ alter table public.notifications       enable row level security;
 alter table public.push_subscriptions  enable row level security;
 alter table public.notification_log    enable row level security;
 
--- Kullanıcı yalnızca kendi verisine erişir
+-- A user can only access their own data
 create policy "own products"     on public.products
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
@@ -93,7 +93,7 @@ create policy "own notifications" on public.notifications
 create policy "own push subs"    on public.push_subscriptions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
--- Varyant/fiyat/log: sahibi ürün/bildirim üzerinden doğrulanır
+-- Variant/price/log: ownership is verified through the product/notification
 create policy "own variants" on public.variants
   for all using (
     exists (select 1 from public.products p where p.id = product_id and p.user_id = auth.uid())

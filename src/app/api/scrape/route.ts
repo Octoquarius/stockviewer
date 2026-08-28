@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { scrapeUrl } from "@/lib/adapters";
 
-// İkincil akış: ürün URL'sinden detay çıkarımı.
+// Secondary flow: extract product details from a URL.
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get("url") ?? "";
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   }
   const product = await scrapeUrl(url);
   if (!product) {
-    return NextResponse.json({ error: "desteklenmeyen site veya ürün bulunamadı" }, { status: 404 });
+    return NextResponse.json({ error: "unsupported site or product not found" }, { status: 404 });
   }
   return NextResponse.json({ product });
 }

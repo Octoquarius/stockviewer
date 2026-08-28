@@ -3,9 +3,9 @@
 import type { Variant } from "@/lib/types";
 
 const TYPE_LABEL: Record<Variant["type"], string> = {
-  size: "Beden",
-  number: "Numara",
-  color: "Renk",
+  size: "Size",
+  number: "Number",
+  color: "Color",
 };
 
 export function VariantMatrix({
@@ -13,11 +13,11 @@ export function VariantMatrix({
   onPick,
 }: {
   variants: Variant[];
-  /** Bir varyanta tıklanınca (özellikle tükenmişe → bildirim aç). */
+  /** Called when a variant is clicked (especially an out-of-stock one → open notify). */
   onPick?: (variant: Variant) => void;
 }) {
-  if (variants.length === 1 && variants[0].label === "Standart") {
-    return null; // tek varyantlı (teknoloji) ürünlerde matris gösterme
+  if (variants.length === 1 && variants[0].label === "Standard") {
+    return null; // don't show the matrix for single-variant (tech) products
   }
 
   const type = variants[0]?.type ?? "size";
@@ -29,9 +29,9 @@ export function VariantMatrix({
         {variants.map((v) => {
           const tip = v.inStock
             ? v.stockCount != null
-              ? `${v.label} · ${v.stockCount} adet`
-              : `${v.label} · stokta`
-            : `${v.label} · tükendi — tıkla, bildirim aç`;
+              ? `${v.label} · ${v.stockCount} left`
+              : `${v.label} · in stock`
+            : `${v.label} · out of stock — click to turn on a notification`;
           return (
             <button
               key={v.label}

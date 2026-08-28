@@ -1,12 +1,12 @@
-// Desteklenen sitelerin metadata'sı: görsel kimlik (rozet rengi) + kategori odağı.
-// plan.md Bölüm 1'deki tam listeyi yansıtır. Adapter geliştirmesi kademelidir (tier).
+// Metadata for supported sites: visual identity (badge color) + category focus.
+// Mirrors the full list in plan.md Section 1. Adapter development happens in tiers.
 
 export interface SiteMeta {
   key: string;
   name: string;
-  /** Rozet arka plan rengi (marka rengine yakın). */
+  /** Badge background color (close to the brand color). */
   color: string;
-  /** Adapter geliştirme önceliği: 1 = ilk. */
+  /** Adapter development priority: 1 = first. */
   tier: 1 | 2 | 3;
   group:
     | "marketplace"
@@ -19,7 +19,7 @@ export interface SiteMeta {
 }
 
 export const SITES: SiteMeta[] = [
-  // Genel pazaryerleri
+  // General marketplaces
   { key: "trendyol", name: "Trendyol", color: "#f27a1a", tier: 1, group: "marketplace" },
   { key: "hepsiburada", name: "Hepsiburada", color: "#ff6000", tier: 1, group: "marketplace" },
   { key: "amazon", name: "Amazon TR", color: "#232f3e", tier: 2, group: "marketplace" },
@@ -28,7 +28,7 @@ export const SITES: SiteMeta[] = [
   { key: "pttavm", name: "PttAVM", color: "#0066b3", tier: 3, group: "marketplace" },
   { key: "mediamarkt", name: "MediaMarkt", color: "#df0000", tier: 3, group: "marketplace" },
 
-  // Çok markalı moda / department store
+  // Multi-brand fashion / department stores
   { key: "boyner", name: "Boyner", color: "#1a1a1a", tier: 1, group: "department" },
   { key: "beymen", name: "Beymen", color: "#111111", tier: 3, group: "department" },
   { key: "vakko", name: "Vakko", color: "#0a0a0a", tier: 3, group: "department" },
@@ -37,7 +37,7 @@ export const SITES: SiteMeta[] = [
   { key: "lidyana", name: "Lidyana", color: "#c9447a", tier: 3, group: "department" },
   { key: "wconcept", name: "WConcept", color: "#222222", tier: 3, group: "department" },
 
-  // Türk hazır giyim markaları
+  // Turkish ready-to-wear brands
   { key: "lcwaikiki", name: "LC Waikiki", color: "#0b4ea2", tier: 1, group: "tr-brand" },
   { key: "defacto", name: "DeFacto", color: "#e4002b", tier: 1, group: "tr-brand" },
   { key: "koton", name: "Koton", color: "#111111", tier: 1, group: "tr-brand" },
@@ -54,7 +54,7 @@ export const SITES: SiteMeta[] = [
   { key: "penti", name: "Penti", color: "#e6007e", tier: 3, group: "tr-brand" },
   { key: "madamecoco", name: "Madame Coco", color: "#b08d57", tier: 3, group: "tr-brand" },
 
-  // Uluslararası hızlı moda (TR)
+  // International fast fashion (TR)
   { key: "zara", name: "Zara", color: "#000000", tier: 2, group: "global-fashion" },
   { key: "pullbear", name: "Pull&Bear", color: "#1a1a1a", tier: 3, group: "global-fashion" },
   { key: "bershka", name: "Bershka", color: "#111111", tier: 3, group: "global-fashion" },
@@ -67,7 +67,7 @@ export const SITES: SiteMeta[] = [
   { key: "tommy", name: "Tommy Hilfiger", color: "#001b94", tier: 3, group: "global-fashion" },
   { key: "uspolo", name: "US Polo Assn", color: "#0a2240", tier: 3, group: "global-fashion" },
 
-  // Ayakkabı & deri
+  // Shoes & leather
   { key: "flo", name: "FLO", color: "#e4002b", tier: 2, group: "shoes" },
   { key: "deichmann", name: "Deichmann", color: "#e2001a", tier: 3, group: "shoes" },
   { key: "derimod", name: "Derimod", color: "#3a2a1a", tier: 3, group: "shoes" },
@@ -80,13 +80,13 @@ export const SITES: SiteMeta[] = [
   { key: "korayspor", name: "Korayspor", color: "#0a3d91", tier: 3, group: "shoes" },
   { key: "ninewest", name: "Nine West", color: "#1a1a1a", tier: 3, group: "shoes" },
 
-  // Tesettür / modest
+  // Modest fashion
   { key: "modanisa", name: "Modanisa", color: "#00a3a3", tier: 2, group: "modest" },
   { key: "sefamerve", name: "Sefamerve", color: "#7a1f5c", tier: 3, group: "modest" },
   { key: "tozlu", name: "Tozlu", color: "#c2185b", tier: 3, group: "modest" },
   { key: "modaselvim", name: "Modaselvim", color: "#9c27b0", tier: 3, group: "modest" },
 
-  // Spor
+  // Sports
   { key: "decathlon", name: "Decathlon", color: "#0082c3", tier: 2, group: "sports" },
   { key: "nike", name: "Nike", color: "#111111", tier: 2, group: "sports" },
   { key: "adidas", name: "Adidas", color: "#000000", tier: 2, group: "sports" },
@@ -111,11 +111,11 @@ export function siteMeta(key: string): SiteMeta {
 }
 
 export const GROUP_LABELS: Record<SiteMeta["group"], string> = {
-  marketplace: "Genel pazaryerleri",
-  department: "Çok markalı moda",
-  "tr-brand": "Türk hazır giyim",
-  "global-fashion": "Uluslararası moda",
-  shoes: "Ayakkabı & deri",
-  modest: "Tesettür / modest",
-  sports: "Spor",
+  marketplace: "General marketplaces",
+  department: "Multi-brand fashion",
+  "tr-brand": "Turkish apparel brands",
+  "global-fashion": "International fashion",
+  shoes: "Shoes & leather",
+  modest: "Modest fashion",
+  sports: "Sports",
 };

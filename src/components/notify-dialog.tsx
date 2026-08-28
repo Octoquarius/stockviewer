@@ -26,7 +26,7 @@ export function NotifyDialog({
 
   useEffect(() => {
     if (target) {
-      // Tükenmiş bir bedene tıklandıysa varsayılan "stok gelince"
+      // If an out-of-stock size was clicked, default to "when it's back in stock"
       setTrigger(target.variant && !target.variant.inStock ? "back_in_stock" : "back_in_stock");
       setChannel("both");
       setTargetPrice("");
@@ -76,7 +76,7 @@ export function NotifyDialog({
       >
         <div className="flex items-start justify-between gap-3 mb-4">
           <div>
-            <h3 className="font-bold text-lg leading-tight">🔔 Bildirim Aç</h3>
+            <h3 className="font-bold text-lg leading-tight">🔔 Turn On Notification</h3>
             <p className="text-sm text-muted mt-0.5">
               {product.title}
               {variant ? (
@@ -98,25 +98,25 @@ export function NotifyDialog({
         {saved ? (
           <div className="py-8 text-center">
             <div className="text-4xl mb-2">🎉</div>
-            <p className="font-semibold">Bildirim kuruldu!</p>
-            <p className="text-sm text-muted">Stok/fiyat değişince haber vereceğiz.</p>
+            <p className="font-semibold">Notification set up!</p>
+            <p className="text-sm text-muted">We&apos;ll let you know when stock or price changes.</p>
           </div>
         ) : (
           <div className="space-y-4">
             <div className="space-y-2">
-              <span className="text-sm font-medium">Ne zaman haber verelim?</span>
+              <span className="text-sm font-medium">When should we notify you?</span>
               <div className="grid grid-cols-2 gap-2">
                 <TriggerBtn
                   active={trigger === "back_in_stock"}
                   onClick={() => setTrigger("back_in_stock")}
                   emoji="📦"
-                  label="Stok gelince"
+                  label="Back in stock"
                 />
                 <TriggerBtn
                   active={trigger === "price_drop"}
                   onClick={() => setTrigger("price_drop")}
                   emoji="💸"
-                  label="Fiyat düşünce"
+                  label="Price drops"
                 />
               </div>
             </div>
@@ -124,7 +124,7 @@ export function NotifyDialog({
             {trigger === "price_drop" && (
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">
-                  Hedef fiyat (şu an {formatPrice(minPrice)})
+                  Target price (currently {formatPrice(minPrice)})
                 </label>
                 <input
                   type="number"
@@ -135,17 +135,17 @@ export function NotifyDialog({
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 outline-none focus:border-primary"
                 />
                 <p className="text-xs text-muted">
-                  Bu fiyatın altına inince bildirim göndereceğiz.
+                  We&apos;ll send a notification once the price drops below this.
                 </p>
               </div>
             )}
 
             <div className="space-y-2">
-              <span className="text-sm font-medium">Nasıl bildirelim?</span>
+              <span className="text-sm font-medium">How should we notify you?</span>
               <div className="grid grid-cols-3 gap-2">
                 <ChannelBtn active={channel === "push"} onClick={() => setChannel("push")} label="Push" emoji="🔔" />
-                <ChannelBtn active={channel === "email"} onClick={() => setChannel("email")} label="E-posta" emoji="✉️" />
-                <ChannelBtn active={channel === "both"} onClick={() => setChannel("both")} label="İkisi" emoji="✨" />
+                <ChannelBtn active={channel === "email"} onClick={() => setChannel("email")} label="Email" emoji="✉️" />
+                <ChannelBtn active={channel === "both"} onClick={() => setChannel("both")} label="Both" emoji="✨" />
               </div>
             </div>
 
@@ -154,13 +154,13 @@ export function NotifyDialog({
                 onClick={onClose}
                 className="flex-1 rounded-xl border border-border py-2.5 font-medium hover:bg-background"
               >
-                Vazgeç
+                Cancel
               </button>
               <button
                 onClick={save}
                 className="flex-1 rounded-xl bg-primary text-white py-2.5 font-semibold shadow-sm shadow-primary/30 hover:bg-primary-strong"
               >
-                Bildirimi Aç
+                Turn On Notification
               </button>
             </div>
           </div>

@@ -16,10 +16,10 @@ import type {
 } from "@/lib/types";
 import { useAuth } from "@/lib/auth";
 
-// Hibrit kalıcılık:
-//  - Supabase yapılandırılmış + kullanıcı girişli  → Postgres (RLS ile)
-//  - değilse                                        → tarayıcı localStorage (demo)
-// useStore() arayüzü her iki durumda da aynıdır.
+// Hybrid persistence:
+//  - Supabase configured + user signed in  → Postgres (with RLS)
+//  - otherwise                             → browser localStorage (demo)
+// The useStore() interface is the same in both cases.
 
 const PRODUCTS_KEY = "stockviewer.tracked";
 const RULES_KEY = "stockviewer.rules";
@@ -59,7 +59,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [rules, setRules] = useState<NotificationRule[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // --- Yükleme ---
+  // --- Loading ---
   useEffect(() => {
     let active = true;
     async function loadAll() {
@@ -126,7 +126,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     };
   }, [dbMode, supabase, user]);
 
-  // --- localStorage senkronu (yalnızca demo modunda) ---
+  // --- localStorage sync (demo mode only) ---
   useEffect(() => {
     if (hydrated && !dbMode)
       window.localStorage.setItem(PRODUCTS_KEY, JSON.stringify(tracked));
@@ -289,7 +289,7 @@ export function useStore() {
   return ctx;
 }
 
-// --- DB satır tipleri ---
+// --- DB row types ---
 interface DbVariant {
   variant_type: Variant["type"];
   variant_label: string;

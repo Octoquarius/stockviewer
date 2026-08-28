@@ -1,140 +1,140 @@
-# StockViewer — Proje Planı
+# StockViewer — Project Plan
 
-> Farklı e-ticaret sitelerindeki ürünlerin **stok durumunu, fiyatını ve beden/numara bazlı uygunluğunu** tek ekranda gösteren; stok geldiğinde veya fiyat düştüğünde **tarayıcı push + e-posta** ile bildirim atan web uygulaması.
+> A web app that shows **stock status, price, and size/number-based availability** for products across different e-commerce sites on a single screen, and sends **browser push + email** notifications when stock arrives or the price drops.
 
 ---
 
-## 0. Ana Akış (Birincil Kullanıcı Senaryosu)
+## 0. Main Flow (Primary User Scenario)
 
-Uygulamanın merkezindeki akış: **ara → ürünün bulunduğu tüm siteleri gör → stok/beden gör → bildirim aç.**
+The flow at the heart of the app: **search → see every site that has the product → see stock/size → turn on a notification.**
 
-1. **Giriş** — Kullanıcı Supabase Auth ile siteye giriş yapar.
-2. **Arama** — Aradığı ürünün **adını** ve **kodunu** (model / barkod / stok kodu) yazar.
-3. **Çoklu-site arama** — Sistem, desteklenen tüm sitelerin arama altyapısını tarar ve eşleşen ürünü bulur.
-4. **Sonuç listesi** — Ürünün bulunduğu **her site bir satır/kart** olarak listelenir:
-   - Site adı + logo/rozet
-   - Fiyat
-   - Stok durumu (🟢 Stokta · 🟡 Az kaldı · 🔴 Tükendi)
-   - Varsa **beden/numara matrisi** (her beden/numara ayrı ayrı)
-   - **Bildirim Aç** butonu
-5. **Bildirim ekranı** — Kullanıcı seçtiği ürün/beden için stok-geldi veya fiyat-düştü bildirimini (push + e-posta) kurar.
+1. **Sign in** — The user signs in to the site with Supabase Auth.
+2. **Search** — They type the **name** of the product they're looking for and its **code** (model / barcode / SKU).
+3. **Multi-site search** — The system scans the search infrastructure of every supported site and finds matching products.
+4. **Result list** — Every site that has the product is listed as **one row/card**:
+   - Site name + logo/badge
+   - Price
+   - Stock status (🟢 In stock · 🟡 Low stock · 🔴 Out of stock)
+   - A **size/number matrix**, if applicable (each size/number shown individually)
+   - **Notify** button
+5. **Notification screen** — The user sets up a back-in-stock or price-drop notification (push + email) for the product/size they chose.
 
 ```
-Arama: "Nike Air Max 90"   Kod: DH8010-100        [ Ara ]
-──────────────────────────────────────────────────────────
-Trendyol      2.499 ₺   🟢 Stokta    38 39 40 41 42 43 44 45   [🔔 Bildirim]
-                                     🔴 🟢 🟢 🔴 🟢 🟢 🔴 🟢
-Hepsiburada   2.599 ₺   🟡 Az kaldı  38 39 40 41 42 43 44 45   [🔔 Bildirim]
-                                     🟢 🟢 🔴 🔴 🟢 🔴 🔴 🟢
-FLO           2.449 ₺   🔴 Tükendi   — beden bilgisi yok —      [🔔 Bildirim]
+Search: "Nike Air Max 90"   Code: DH8010-100        [ Search ]
+──────────────────────────────────────────────────────────────
+Trendyol      2,499 ₺   🟢 In stock     38 39 40 41 42 43 44 45   [🔔 Notify]
+                                        🔴 🟢 🟢 🔴 🟢 🟢 🔴 🟢
+Hepsiburada   2,599 ₺   🟡 Low stock    38 39 40 41 42 43 44 45   [🔔 Notify]
+                                        🟢 🟢 🔴 🔴 🟢 🔴 🔴 🟢
+FLO           2,449 ₺   🔴 Out of stock — no size info —           [🔔 Notify]
 ```
 
-> **Birincil akış budur.** "URL yapıştır → ekle" yöntemi ikincil/alternatif giriş yolu olarak korunur.
+> **This is the primary flow.** The "paste a URL → add" method is kept as a secondary/alternative entry point.
 >
-> **Teknik not:** Ad + kod ile çoklu-site arama, her sitenin kendi arama altyapısını programatik kullanmayı gerektirir; URL parse'tan zordur, her sitenin arama sonucu yapısı farklıdır ve aynı ürünün kodu site bazında değişebildiği için **bulanık eşleştirme** (isim + marka + görsel benzerliği) gerekebilir. Bu yüzden `SiteAdapter` arayüzüne `scrape(url)` yanında bir `search(query, code)` metodu eklenir (bkz. Bölüm 4).
+> **Technical note:** Multi-site search by name + code requires programmatically using each site's own search infrastructure; it's harder than URL parsing, each site's search-result structure differs, and since the same product's code can vary by site, **fuzzy matching** (name + brand + image similarity) may be needed. That's why the `SiteAdapter` interface gets a `search(query, code)` method alongside `scrape(url)` (see Section 4).
 
 ---
 
-## 1. Amaç ve Kapsam
+## 1. Purpose and Scope
 
-### Ana hedef
-Kullanıcının farklı sitelerde stokta bulamadığı ürünleri **tek bir panelden** takip etmesi. Özellikle:
+### Main goal
+Let the user track, from **a single panel**, products they couldn't find in stock across different sites. In particular:
 
-- 👕 **Kıyafet stokları** — beden bazında (XS, S, M, L, XL...) ayrı ayrı
-- 👟 **Ayakkabı stokları** — numara bazında (36, 37, 38... 45) ayrı ayrı
-- 👜 **Çanta stokları** — renk/varyant bazında
-- 💻 **Teknolojik ürünler** — ikincil hedef (varyant gerektirmeyen basit stok)
+- 👕 **Clothing stock** — broken down by size (XS, S, M, L, XL...)
+- 👟 **Shoe stock** — broken down by number (36, 37, 38... 45)
+- 👜 **Bag stock** — broken down by color/variant
+- 💻 **Tech products** — secondary goal (simple stock, no variants required)
 
-### Desteklenecek siteler
-Türkiye'nin en büyük kıyafet/moda alışveriş siteleri hedeflenir. Her site için ayrı bir "adapter" (scraper modülü) yazılır; geliştirme öncelik kademelerine bölünür (bkz. Bölüm 4 ve Faz 3).
+### Sites to support
+Targets Turkey's largest clothing/fashion shopping sites. A separate "adapter" (scraper module) is written for each site; development is split into priority tiers (see Section 4 and Phase 3).
 
-**Genel pazaryerleri**
-- Trendyol, Hepsiburada, Amazon TR, n11, Çiçeksepeti, PttAVM, MediaMarkt (teknoloji)
+**General marketplaces**
+- Trendyol, Hepsiburada, Amazon TR, n11, Çiçeksepeti, PttAVM, MediaMarkt (tech)
 
-**Çok markalı moda / department store**
+**Multi-brand fashion / department stores**
 - Boyner, Beymen, Vakko, Network, Brandroom, Lidyana, WConcept, Morhipo\*
 
-**Türk hazır giyim markaları**
-- LC Waikiki, DeFacto, Koton, Mavi, Colin's, Twist, İpekyol, Machka, AdL, Kiğılı, Damat Tween, Sarar, Lufian, Penti (iç giyim), Madame Coco (ev/tekstil)
+**Turkish ready-to-wear brands**
+- LC Waikiki, DeFacto, Koton, Mavi, Colin's, Twist, İpekyol, Machka, AdL, Kiğılı, Damat Tween, Sarar, Lufian, Penti (underwear), Madame Coco (home/textile)
 
-**Uluslararası hızlı moda (TR siteleri)**
-- Zara, Pull&Bear, Bershka, Stradivarius, Massimo Dutti, Oysho (Inditex grubu), H&M, Mango, Lacoste, Tommy Hilfiger, US Polo Assn TR
+**International fast fashion (TR sites)**
+- Zara, Pull&Bear, Bershka, Stradivarius, Massimo Dutti, Oysho (Inditex group), H&M, Mango, Lacoste, Tommy Hilfiger, US Polo Assn TR
 
-**Ayakkabı & deri**
+**Shoes & leather**
 - FLO, Deichmann, Derimod, Hotiç, İnci Deri, Greyder, Desa, SuperStep, Sneaks Up, Korayspor, Nine West TR
 
-**Tesettür / modest moda**
+**Modest fashion**
 - Modanisa, Sefamerve, Tozlu, Modaselvim, Trendyol Modest
 
-**Spor giyim & ayakkabı**
+**Sportswear & shoes**
 - Decathlon, Nike TR, Adidas TR, Puma TR, Intersport
 
-> \* Morhipo gibi bazı siteler kapanmış veya başka markayla birleşmiş olabilir; uygulamadan önce aktiflik doğrulanır. Yalnızca pazaryeri (örn. Trendyol/Boyner) üzerinden satılan markalar için ayrı adapter yerine ilgili pazaryeri adapteri kullanılır.
+> \* Some sites, like Morhipo, may have shut down or merged with another brand; this is verified before implementation. For brands sold only through a marketplace (e.g. Trendyol/Boyner), the relevant marketplace adapter is used instead of a dedicated one.
 
-### Çekirdek özellikler
-1. **Ad + kod ile arama** → ürünün bulunduğu tüm siteleri tek ekranda listeleme (bkz. Bölüm 0)
-2. Her sonuçta: site, fiyat, stok durumu, **beden/numara matrisi**
-3. Ürün ekleme (URL yapıştır → otomatik parse) — alternatif yol
-4. Periyodik otomatik stok/fiyat kontrolü (Vercel Cron)
-5. Bildirim açma: stok gelince / fiyat düşünce → **tarayıcı push + e-posta**
-6. Sade, tatlı ve cezbedici arayüz (stok ve fiyatı öne çıkaran tasarım)
+### Core features
+1. **Search by name + code** → lists every site that has the product on a single screen (see Section 0)
+2. Each result shows: site, price, stock status, **size/number matrix**
+3. Add a product (paste URL → auto-parse) — alternative path
+4. Periodic automatic stock/price checks (Vercel Cron)
+5. Turn on notifications: when stock arrives / price drops → **browser push + email**
+6. A clean, pleasant, and inviting UI (design that puts stock and price front and center)
 
 ---
 
-## 2. Teknik Yığın
+## 2. Tech Stack
 
-| Katman | Teknoloji | Not |
+| Layer | Technology | Note |
 |--------|-----------|-----|
-| Framework | **Next.js (App Router)** | Sunucu bileşenleri + API rotaları |
-| Dil | TypeScript | |
-| UI | Tailwind CSS + **shadcn/ui** | Sade, modern, hızlı |
-| Veritabanı + Auth | **Supabase** (Postgres) | Kullanıcı, ürün, varyant, bildirim aboneliği |
-| Scraping | Cheerio (HTML parse) + gerektiğinde Playwright | Bot korumalı siteler için |
-| Zamanlanmış görev | **Vercel Cron** | Periyodik stok kontrolü |
-| Push bildirim | Web Push API (VAPID) | Service Worker ile |
-| E-posta | **Resend** | Stok/fiyat bildirimi |
-| Dağıtım | Vercel | |
+| Framework | **Next.js (App Router)** | Server components + API routes |
+| Language | TypeScript | |
+| UI | Tailwind CSS + **shadcn/ui** | Clean, modern, fast |
+| Database + Auth | **Supabase** (Postgres) | User, product, variant, notification subscription |
+| Scraping | Cheerio (HTML parsing) + Playwright where needed | For bot-protected sites |
+| Scheduled job | **Vercel Cron** | Periodic stock checks |
+| Push notifications | Web Push API (VAPID) | Via Service Worker |
+| Email | **Resend** | Stock/price notifications |
+| Deployment | Vercel | |
 
 ---
 
-## 3. Veri Modeli (Supabase)
+## 3. Data Model (Supabase)
 
 ```
-users                (Supabase Auth ile)
+users                (via Supabase Auth)
   id, email, created_at
 
-products             (takip edilen ürün)
+products             (tracked product)
   id, user_id, source_site, product_url, title,
   image_url, category (clothing|shoes|bag|tech),
   currency, created_at
 
-variants             (beden/numara/renk bazlı satır)
+variants             (row per size/number/color)
   id, product_id, variant_type (size|number|color),
-  variant_label ("M", "42", "Siyah"),
+  variant_label ("M", "42", "Black"),
   in_stock (bool), stock_count (nullable), price,
   last_checked_at
 
-price_history        (fiyat geçmişi grafiği için)
+price_history        (for the price-history chart)
   id, variant_id, price, recorded_at
 
-notifications        (bildirim kuralları)
+notifications         (notification rules)
   id, user_id, product_id, variant_id (nullable),
   trigger_type (back_in_stock|price_drop),
   target_price (nullable), channel (push|email|both),
   is_active
 
-push_subscriptions   (tarayıcı push abonelikleri)
+push_subscriptions   (browser push subscriptions)
   id, user_id, endpoint, keys_p256dh, keys_auth
 
-notification_log     (gönderilen bildirimler — tekrar engelleme)
+notification_log     (sent notifications — dedup)
   id, notification_id, sent_at, status
 ```
 
 ---
 
-## 4. Scraping Mimarisi (Adapter Pattern)
+## 4. Scraping Architecture (Adapter Pattern)
 
-Her site için ortak arayüze uyan bir adapter:
+Each site gets an adapter that conforms to a shared interface:
 
 ```ts
 interface ProductResult {
@@ -144,7 +144,7 @@ interface ProductResult {
   category: Category;
   variants: {
     type: 'size' | 'number' | 'color';
-    label: string;          // "M", "42", "Siyah"
+    label: string;          // "M", "42", "Black"
     inStock: boolean;
     stockCount?: number;
     price: number;
@@ -154,117 +154,117 @@ interface ProductResult {
 
 interface SiteAdapter {
   site: string;                                   // "trendyol", "hepsiburada"...
-  match(url: string): boolean;                    // bu URL bu siteye ait mi?
-  scrape(url: string): Promise<ProductResult>;    // tek ürün URL'sinden detay (ikincil akış)
-  search(query: string, code?: string): Promise<ProductResult[]>; // ad+kod ile arama (birincil akış)
+  match(url: string): boolean;                    // does this URL belong to this site?
+  scrape(url: string): Promise<ProductResult>;    // detail from a single product URL (secondary flow)
+  search(query: string, code?: string): Promise<ProductResult[]>; // search by name+code (primary flow)
 }
 ```
 
-- `adapters/trendyol.ts`, `adapters/hepsiburada.ts`, `adapters/lcwaikiki.ts`, ... her site için bir dosya.
-- `adapters/index.ts` → kayıtlı tüm adapter'ları tutar; **arama** akışında hepsi paralel çağrılır, **URL** akışında `match()` ile doğru adapter seçilir.
-- **Geliştirme notu:** Önce her adapter `mock` veri döndüren iskelet olarak yazılır, böylece UI ve bildirim akışı uçtan uca çalışır; ardından gerçek HTML parse / arama mantığı tek tek eklenir.
+- `adapters/trendyol.ts`, `adapters/hepsiburada.ts`, `adapters/lcwaikiki.ts`, ... one file per site.
+- `adapters/index.ts` → holds all registered adapters; in the **search** flow all of them are called in parallel, in the **URL** flow the right adapter is chosen via `match()`.
+- **Development note:** Each adapter is first written as a skeleton that returns `mock` data, so the UI and notification flow work end-to-end; the real HTML parsing / search logic is then added one site at a time.
 
-#### Adapter Öncelik Kademeleri
-Tüm siteler hedeftir; gerçek scraper/arama geliştirmesi şu sırayla yapılır:
-- **Kademe 1 (ilk):** Trendyol, Hepsiburada, LC Waikiki, DeFacto, Koton, Boyner — en yüksek trafik + kıyafet/ayakkabı odağı.
-- **Kademe 2:** Mavi, Zara, H&M, Mango, FLO, Amazon TR.
-- **Kademe 3:** Geri kalan markalar, talebe göre.
+#### Adapter Priority Tiers
+Every site is a target; real scraper/search development happens in this order:
+- **Tier 1 (first):** Trendyol, Hepsiburada, LC Waikiki, DeFacto, Koton, Boyner — highest traffic + clothing/shoe focus.
+- **Tier 2:** Mavi, Zara, H&M, Mango, FLO, Amazon TR.
+- **Tier 3:** The remaining brands, based on demand.
 
-- **Yasal/teknik uyarı:** Scraping bazı sitelerin kullanım şartlarına aykırı olabilir ve bot korumaları (Cloudflare vb.) parse'ı kırabilir. Rate-limit + nazik tarama + User-Agent yönetimi uygulanacak; her adapter ayrı bakım gerektirir. Bu plan.md içinde ayrı bir "Riskler" bölümünde işlenir.
-
----
-
-## 5. Periyodik Kontrol (Vercel Cron)
-
-- `app/api/cron/check-stock/route.ts` — Vercel Cron ile örn. her 15–30 dakikada bir tetiklenir.
-- Akış:
-  1. Aktif bildirim kuralı olan tüm `products` çekilir.
-  2. İlgili adapter ile yeniden scrape edilir.
-  3. Varyant stok/fiyat durumu eski değerle kıyaslanır.
-  4. Tetikleme koşulu sağlandıysa (stok geldi / fiyat hedefin altına düştü) → bildirim kuyruğa alınır.
-  5. `notification_log` ile aynı olay için tekrar bildirim gönderilmesi engellenir.
+- **Legal/technical warning:** Scraping may violate some sites' terms of use, and bot protections (Cloudflare, etc.) can break parsing. Rate-limiting + polite crawling + User-Agent management will be applied; each adapter requires its own maintenance. This is covered separately in the "Risks" section of this plan.md.
 
 ---
 
-## 6. Bildirim Akışı
+## 5. Periodic Check (Vercel Cron)
 
-### Tarayıcı Push
-- Service Worker (`public/sw.js`) + VAPID anahtarları.
-- Kullanıcı "Bildirim Aç" → izin istenir → `push_subscriptions` kaydı.
-- Cron tetiklenince `web-push` ile gönderilir.
-
-### E-posta
-- Resend ile şablon: "🎉 {ürün} {beden} bedeni tekrar stokta!" / "💸 {ürün} fiyatı {fiyat} oldu".
+- `app/api/cron/check-stock/route.ts` — triggered by Vercel Cron, e.g. every 15–30 minutes.
+- Flow:
+  1. Fetch all `products` that have an active notification rule.
+  2. Re-scrape them with the relevant adapter.
+  3. Compare variant stock/price against the previous value.
+  4. If the trigger condition is met (stock arrived / price dropped below target) → queue a notification.
+  5. Use `notification_log` to prevent sending a notification for the same event twice.
 
 ---
 
-## 7. Arayüz (Sade + Tatlı + Cezbedici)
+## 6. Notification Flow
 
-### Tasarım dili
-- Açık, ferah, bol beyaz alan; yumuşak köşeler, hafif gölgeler.
-- Sıcak/pastel vurgu rengi (örn. coral / soft purple) + nötr gri zemin.
-- Stok durumu net renk kodları: 🟢 Stokta · 🟡 Az kaldı · 🔴 Tükendi.
-- Fiyat büyük ve okunaklı; fiyat düşüşü yeşil rozetle vurgulanır.
+### Browser Push
+- Service Worker (`public/sw.js`) + VAPID keys.
+- User clicks "Notify" → permission is requested → a `push_subscriptions` record is saved.
+- Sent via `web-push` when the cron job fires.
 
-### Ekranlar
-1. **Arama (ana ekran)** — ürün adı + kod girişi → tüm sitelerden sonuç listesi (her site bir satır: fiyat, stok, beden/numara matrisi, bildirim aç). Bölüm 0'daki akış.
-2. **Dashboard / Takip listem** — kart veya tablo görünümü. Her kart: görsel, başlık, site rozeti, fiyat, stok durumu, **beden/numara matrisi** (her beden için yeşil/kırmızı nokta).
-3. **Ürün detay** — varyant tablosu, fiyat geçmişi grafiği, bildirim kuralı kurma.
-4. **Ürün ekle (alternatif)** — URL yapıştır → önizleme → kaydet.
-5. **Bildirimlerim** — aktif kurallar ve geçmiş.
-6. **Giriş / Kayıt** — Supabase Auth.
+### Email
+- Template via Resend: "🎉 {product} is back in stock in size {size}!" / "💸 {product} price dropped to {price}".
 
-### Beden/Numara Matrisi (kilit bileşen)
+---
+
+## 7. UI (Clean + Pleasant + Inviting)
+
+### Design language
+- Bright, airy, generous white space; soft corners, subtle shadows.
+- A warm/pastel accent color (e.g. coral / soft purple) + a neutral gray background.
+- Clear color codes for stock status: 🟢 In stock · 🟡 Low stock · 🔴 Out of stock.
+- Price shown large and legible; a price drop is highlighted with a green badge.
+
+### Screens
+1. **Search (home screen)** — product name + code input → result list from every site (each site a row: price, stock, size/number matrix, notify button). The flow from Section 0.
+2. **Dashboard / My tracked list** — card or table view. Each card: image, title, site badge, price, stock status, **size/number matrix** (a green/red dot per size).
+3. **Product detail** — variant table, price-history chart, set up a notification rule.
+4. **Add product (alternative)** — paste URL → preview → save.
+5. **My notifications** — active rules and history.
+6. **Sign in / Sign up** — Supabase Auth.
+
+### Size/Number Matrix (key component)
 ```
-Nike Air Max 90        Trendyol      2.499 ₺   🟢 Stokta
+Nike Air Max 90        Trendyol      2,499 ₺   🟢 In stock
 ┌──────────────────────────────────────────────┐
 │ 38  39  40  41  42  43  44  45                 │
 │ 🔴  🟢  🟢  🔴  🟢  🟢  🔴  🟢                 │
 └──────────────────────────────────────────────┘
-   → tükenmiş bedene tıkla = o beden için bildirim aç
+   → click an out-of-stock size to turn on a notification for it
 ```
 
 ---
 
-## 8. Yapılacaklar (Aşamalı Yol Haritası)
+## 8. Roadmap (Phased)
 
-### Faz 0 — İskelet
-- [ ] Next.js + TypeScript + Tailwind + shadcn/ui kurulumu
-- [ ] Supabase projesi + tabloların migration'ı
-- [ ] Temel layout, tema, navigasyon
+### Phase 0 — Skeleton
+- [ ] Set up Next.js + TypeScript + Tailwind + shadcn/ui
+- [ ] Supabase project + table migrations
+- [ ] Base layout, theme, navigation
 
-### Faz 1 — Çekirdek UI (mock veri ile)
-- [ ] **Arama ekranı** (ad + kod) → çoklu-site sonuç listesi (mock)
-- [ ] Ürün listesi + kart/tablo + beden-numara matrisi bileşeni
-- [ ] Ürün ekle akışı (URL, mock parse — alternatif yol)
-- [ ] Ürün detay + fiyat geçmişi grafiği
+### Phase 1 — Core UI (with mock data)
+- [ ] **Search screen** (name + code) → multi-site result list (mock)
+- [ ] Product list + card/table + size-number matrix component
+- [ ] Add-product flow (URL, mock parse — alternative path)
+- [ ] Product detail + price-history chart
 
-### Faz 2 — Auth & Kalıcılık
-- [ ] Supabase Auth (e-posta ile giriş)
-- [ ] Ürün/varyant CRUD, kullanıcıya bağlı veriler
+### Phase 2 — Auth & Persistence
+- [ ] Supabase Auth (email sign-in)
+- [ ] Product/variant CRUD, data scoped to the user
 
-### Faz 3 — Scraping (kademeli)
-- [ ] Adapter altyapısı + `search()`/`scrape()` + URL yönlendirme + paralel arama orkestrasyonu
-- [ ] **Kademe 1:** Trendyol, Hepsiburada, LC Waikiki, DeFacto, Koton, Boyner
-- [ ] **Kademe 2:** Mavi, Zara, H&M, Mango, FLO, Amazon TR
-- [ ] **Kademe 3:** Geri kalan markalar (talebe göre)
-- [ ] Bulanık eşleştirme (isim+marka+kod) ile siteler arası ürün eşleme
-- [ ] Rate-limit, hata yönetimi, retry, bot-koruma fallback (Playwright)
+### Phase 3 — Scraping (tiered)
+- [ ] Adapter infrastructure + `search()`/`scrape()` + URL routing + parallel search orchestration
+- [ ] **Tier 1:** Trendyol, Hepsiburada, LC Waikiki, DeFacto, Koton, Boyner
+- [ ] **Tier 2:** Mavi, Zara, H&M, Mango, FLO, Amazon TR
+- [ ] **Tier 3:** Remaining brands (based on demand)
+- [ ] Fuzzy matching (name+brand+code) to match products across sites
+- [ ] Rate-limiting, error handling, retries, bot-protection fallback (Playwright)
 
-### Faz 4 — Otomasyon & Bildirim
-- [ ] Vercel Cron ile periyodik kontrol
+### Phase 4 — Automation & Notifications
+- [ ] Periodic checks via Vercel Cron
 - [ ] Web Push (Service Worker + VAPID)
-- [ ] Resend ile e-posta bildirimi
-- [ ] Tekrar bildirim engelleme (notification_log)
+- [ ] Email notifications via Resend
+- [ ] Duplicate-notification prevention (notification_log)
 
-### Faz 5 — Cila
-- [ ] Boş durumlar, yüklenme iskeletleri, hata ekranları
-- [ ] Mobil uyum
-- [ ] Vercel'e dağıtım
+### Phase 5 — Polish
+- [ ] Empty states, loading skeletons, error screens
+- [ ] Mobile responsiveness
+- [ ] Deploy to Vercel
 
 ---
 
-## 9. Gerekli Ortam Değişkenleri
+## 9. Required Environment Variables
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=
@@ -278,13 +278,12 @@ CRON_SECRET=
 
 ---
 
-## 10. Riskler ve Notlar
+## 10. Risks and Notes
 
-- **Scraping kırılganlığı:** Siteler HTML yapısını değiştirince adapter bozulur → bakım gerekir.
-- **Bot korumaları:** Cloudflare/JS-render gerektiren sitelerde Cheerio yetmeyebilir → Playwright gerekebilir (Vercel'de ek yapılandırma).
-- **Yasal:** Scraping bazı sitelerin ToS'una aykırı olabilir; ticari kullanımda dikkat. Mümkünse resmi/affiliate API'ler tercih edilmeli.
-- **Cron sıklığı vs. kaynak:** Çok sık tarama IP engeli getirebilir; makul aralık (15–30 dk) seçilecek.
-- **Çok sayıda site = yüksek bakım yükü:** ~40 sitenin her birinin HTML/arama yapısı ve bot koruması farklı. Kademeli yaklaşım (Kademe 1→3) bu yükü yönetilebilir kılar.
-- **Çoklu-site eşleştirme zorluğu:** Aynı ürün her sitede farklı isim/kod ile listelenebilir; güvenilir eşleştirme bulanık eşleme + kullanıcı onayı gerektirebilir.
-- **Sadece pazaryerinde satılan markalar:** Kendi sitesi olmayan/yalnızca Trendyol-Boyner üzerinden satan markalar için ayrı adapter yazılmaz; ilgili pazaryeri adapteri kullanılır.
-
+- **Scraping fragility:** When a site changes its HTML structure, the adapter breaks → needs maintenance.
+- **Bot protections:** Cheerio may not be enough on sites requiring Cloudflare/JS rendering → Playwright may be needed (extra configuration on Vercel).
+- **Legal:** Scraping may violate some sites' ToS; caution needed for commercial use. Official/affiliate APIs should be preferred where possible.
+- **Cron frequency vs. resources:** Crawling too often can trigger an IP ban; a reasonable interval (15–30 min) will be chosen.
+- **Many sites = high maintenance load:** ~40 sites, each with a different HTML/search structure and bot protection. The tiered approach (Tier 1→3) keeps this load manageable.
+- **Multi-site matching difficulty:** The same product may be listed under a different name/code on each site; reliable matching may require fuzzy matching + user confirmation.
+- **Marketplace-only brands:** For brands without their own site that sell only through Trendyol-Boyner, no separate adapter is written; the relevant marketplace adapter is used instead.

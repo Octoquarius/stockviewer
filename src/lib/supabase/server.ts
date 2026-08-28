@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { isSupabaseConfigured, supabaseAnonKey, supabaseUrl } from "./config";
 
-/** Sunucu bileşeni / route handler için cookie-bağlı Supabase istemcisi. */
+/** Cookie-bound Supabase client for server components / route handlers. */
 export async function createSupabaseServer() {
   if (!isSupabaseConfigured) return null;
   const cookieStore = await cookies();
@@ -18,14 +18,14 @@ export async function createSupabaseServer() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // Server Component'ten çağrıldığında set yok sayılabilir.
+          // Setting a cookie can be ignored when called from a Server Component.
         }
       },
     },
   });
 }
 
-/** Service-role istemcisi — cron gibi sunucu işlerinde RLS'i atlar. */
+/** Service-role client — bypasses RLS for server-side jobs like the cron. */
 export function createSupabaseAdmin() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!supabaseUrl || !serviceKey) return null;

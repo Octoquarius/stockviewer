@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServer } from "@/lib/supabase/server";
 
-// Tarayıcı push aboneliğini kullanıcının hesabına kaydeder.
+// Saves the browser push subscription to the user's account.
 export async function POST(request: Request) {
   const sub = await request.json().catch(() => null);
   if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   const supabase = await createSupabaseServer();
   if (!supabase) {
-    // Supabase yapılandırılmamış — demo modu, sadece onayla.
+    // Supabase isn't configured — demo mode, just acknowledge.
     return NextResponse.json({ ok: true, stored: false });
   }
 

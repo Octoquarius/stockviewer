@@ -1,6 +1,6 @@
-// Tarayıcı push aboneliği yardımcıları.
-// VAPID public anahtarı NEXT_PUBLIC_VAPID_PUBLIC_KEY ile gelir; yoksa yalnızca
-// Notification izni alınır (abonelik backend'e gönderilmez).
+// Browser push subscription helpers.
+// The VAPID public key comes from NEXT_PUBLIC_VAPID_PUBLIC_KEY; if it's missing,
+// only Notification permission is requested (the subscription isn't sent to the backend).
 
 export type PushState = "unsupported" | "default" | "granted" | "denied";
 
@@ -43,9 +43,9 @@ export async function subscribeToPush(): Promise<PushState> {
         body: JSON.stringify(sub),
       });
     } else {
-      // VAPID yapılandırılmadıysa demo amaçlı yerel bildirim göster.
-      reg.showNotification("StockViewer bildirimleri açık 🎉", {
-        body: "Stok gelince ya da fiyat düşünce burada haber vereceğiz.",
+      // If VAPID isn't configured, show a local notification for demo purposes.
+      reg.showNotification("StockViewer notifications are on 🎉", {
+        body: "We'll let you know here when stock arrives or the price drops.",
         icon: "/icon.svg",
       });
     }

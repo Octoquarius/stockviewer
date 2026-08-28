@@ -2,8 +2,8 @@ import type { Category, ProductResult, Variant } from "@/lib/types";
 import { siteMeta } from "@/lib/sites";
 import type { SiteAdapter } from "./types";
 
-// --- Deterministik sözde-rastgele (seed tabanlı) ---
-// Aynı arama her zaman aynı sonucu verir; demo deneyimini tutarlı kılar.
+// --- Deterministic pseudo-random (seed-based) ---
+// The same search always returns the same result, keeping the demo experience consistent.
 function hashSeed(str: string): number {
   let h = 2166136261;
   for (let i = 0; i < str.length; i++) {
@@ -23,10 +23,10 @@ function mulberry32(seed: number) {
   };
 }
 
-// --- Kategori tahmini (arama kelimesinden) ---
-const SHOE_WORDS = ["ayakkabı", "sneaker", "spor ayakkabı", "bot", "çizme", "sandalet", "topuklu", "air max", "superstar"];
-const BAG_WORDS = ["çanta", "sırt çantası", "el çantası", "cüzdan", "bag", "clutch"];
-const TECH_WORDS = ["telefon", "laptop", "kulaklık", "iphone", "samsung", "playstation", "tv", "monitör", "tablet"];
+// --- Category guessing (from the search term) ---
+const SHOE_WORDS = ["shoes", "shoe", "sneaker", "sneakers", "boots", "boot", "sandals", "heels", "air max", "superstar"];
+const BAG_WORDS = ["bag", "backpack", "handbag", "wallet", "clutch"];
+const TECH_WORDS = ["phone", "laptop", "headphones", "iphone", "samsung", "playstation", "tv", "monitor", "tablet"];
 
 export function guessCategory(query: string): Category {
   const q = query.toLowerCase();
@@ -38,7 +38,7 @@ export function guessCategory(query: string): Category {
 
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 const SHOE_NUMBERS = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
-const COLORS = ["Siyah", "Beyaz", "Lacivert", "Bej", "Bordo"];
+const COLORS = ["Black", "White", "Navy", "Beige", "Burgundy"];
 
 function buildVariants(category: Category, rand: () => number, basePrice: number): Variant[] {
   if (category === "shoes") {
@@ -77,12 +77,12 @@ function buildVariants(category: Category, rand: () => number, basePrice: number
       };
     });
   }
-  // tech: tek varyant
+  // tech: single variant
   const inStock = rand() > 0.4;
   return [
     {
       type: "color" as const,
-      label: "Standart",
+      label: "Standard",
       inStock,
       stockCount: inStock ? Math.floor(rand() * 15) + 1 : 0,
       price: basePrice,
@@ -90,7 +90,7 @@ function buildVariants(category: Category, rand: () => number, basePrice: number
   ];
 }
 
-// Türkçe-uyumlu başlık: yalnızca her kelimenin ilk harfini büyütür.
+// Turkish-aware title case: capitalizes only the first letter of each word.
 function titleCase(s: string): string {
   return s
     .split(/\s+/)
@@ -98,8 +98,8 @@ function titleCase(s: string): string {
     .join(" ");
 }
 
-// Kategoriye uygun, deterministik ürün görseli. Küratörlü Unsplash CDN
-// görselleri (kalıcı, hızlı, anahtar gerektirmez); seed'e göre seçilir.
+// Deterministic, category-appropriate product image. Curated Unsplash CDN
+// images (stable, fast, no key required); picked based on the seed.
 const CATEGORY_IMAGES: Record<Category, string[]> = {
   clothing: [
     "photo-1521572163474-6864f9cf17ab",
@@ -135,8 +135,8 @@ function productImage(category: Category, seed: number): string {
 }
 
 /**
- * Mock adapter fabrikası. Verilen site için, aramanın o sitede bulunup
- * bulunmadığını seed'e göre belirler; bulduysa varyantlı bir ürün döndürür.
+ * Mock adapter factory. For a given site, decides — based on the seed —
+ * whether the search term is found on that site; if so, returns a product with variants.
  */
 export function createMockAdapter(siteKey: string): SiteAdapter {
   const meta = siteMeta(siteKey);
@@ -148,10 +148,10 @@ export function createMockAdapter(siteKey: string): SiteAdapter {
       const seed = hashSeed(`${siteKey}|${query.toLowerCase().trim()}|${code ?? ""}`);
       const rand = mulberry32(seed);
 
-      // Her site ürünü stoklamıyor: ~%65 olasılıkla listede yer alır.
+      // Not every site carries the product: it appears in the results ~65% of the time.
       if (rand() > 0.65) return [];
 
-      const basePrice = Math.round((500 + rand() * 4500) / 10) * 10; // 500–5000 TL, 10'a yuvarlı
+      const basePrice = Math.round((500 + rand() * 4500) / 10) * 10; // 500–5000 TRY, rounded to 10
       const variants = buildVariants(category, rand, basePrice);
       const title = titleCase(query.trim());
 
@@ -160,7 +160,7 @@ export function createMockAdapter(siteKey: string): SiteAdapter {
           site: siteKey,
           title: code ? `${title} (${code})` : title,
           imageUrl: productImage(category, seed),
-          productUrl: `https://www.${siteKey}.com/arama?q=${encodeURIComponent(query)}`,
+          productUrl: `https://www.${siteKey}.com/search?q=${encodeURIComponent(query)}`,
           category,
           brand: meta.name,
           currency: "TRY",
@@ -169,7 +169,7 @@ export function createMockAdapter(siteKey: string): SiteAdapter {
       ];
     },
     async scrape(url: string): Promise<ProductResult | null> {
-      const q = "Ürün";
+      const q = "Product";
       const results = await this.search(q);
       if (results.length === 0) return null;
       return { ...results[0], productUrl: url };

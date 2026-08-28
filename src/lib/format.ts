@@ -15,19 +15,19 @@ export const STATUS_META: Record<
   { label: string; dot: string; text: string; bg: string }
 > = {
   in: {
-    label: "Stokta",
+    label: "In stock",
     dot: "bg-[var(--in-stock)]",
     text: "text-[var(--in-stock)]",
     bg: "bg-green-50",
   },
   low: {
-    label: "Az kaldı",
+    label: "Low stock",
     dot: "bg-[var(--low-stock)]",
     text: "text-[var(--low-stock)]",
     bg: "bg-amber-50",
   },
   out: {
-    label: "Tükendi",
+    label: "Out of stock",
     dot: "bg-[var(--out-stock)]",
     text: "text-[var(--out-stock)]",
     bg: "bg-red-50",

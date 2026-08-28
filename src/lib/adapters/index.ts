@@ -4,15 +4,15 @@ import { createMockAdapter, guessCategory } from "./mock";
 import type { SiteAdapter } from "./types";
 
 /**
- * Adapter kaydı. Şu an tüm siteler mock adapter kullanır.
- * Gerçek adapter eklendikçe (Kademe 1→3) burada gerçek implementasyonla
- * değiştirilir; arayüz aynı kaldığı için UI değişmez.
+ * Adapter registry. Every site currently uses the mock adapter.
+ * As real adapters are added (Tier 1→3), they'll replace the mock
+ * implementation here; since the interface stays the same, the UI won't change.
  */
 const ADAPTERS: SiteAdapter[] = SITES.map((s) => createMockAdapter(s.key));
 
 /**
- * Ad + kod ile tüm sitelerde paralel arama yapar.
- * Sonuçlar fiyata göre (en ucuz önce) sıralanır.
+ * Searches every site in parallel by name + code.
+ * Results are sorted by price (cheapest first).
  */
 export async function searchAllSites(
   query: string,
@@ -38,14 +38,14 @@ export async function searchAllSites(
   return results;
 }
 
-/** URL'e göre doğru adapter'ı bulup tek ürün scrape eder (ikincil akış). */
+/** Finds the right adapter by URL and scrapes a single product (secondary flow). */
 export async function scrapeUrl(url: string): Promise<ProductResult | null> {
   const adapter = ADAPTERS.find((a) => a.match(url));
   if (!adapter) return null;
   return adapter.scrape(url);
 }
 
-/** Tek bir sitede arama (cron'da güncel stok/fiyat kontrolü için). */
+/** Search a single site (used by the cron for up-to-date stock/price checks). */
 export async function searchSite(
   siteKey: string,
   query: string,

@@ -24,7 +24,7 @@ interface NotifRow {
 }
 
 export async function GET(request: Request) {
-  // Güvenlik: Vercel Cron `Authorization: Bearer <CRON_SECRET>` gönderir.
+  // Security: Vercel Cron sends `Authorization: Bearer <CRON_SECRET>`.
   const auth = request.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
   if (secret && auth !== `Bearer ${secret}`) {
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
     const current = await searchSite(rule.site, rule.product_title);
     if (!current) continue;
 
-    // Tetikleme koşulu + idempotent event anahtarı
+    // Trigger condition + idempotent event key
     let fired = false;
     let eventKey = "";
     let pushBody = "";
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
       if (inStock) {
         fired = true;
         eventKey = `back_in_stock:${rule.variant_label ?? "any"}`;
-        pushBody = `${rule.product_title}${rule.variant_label ? ` (${rule.variant_label})` : ""} tekrar stokta!`;
+        pushBody = `${rule.product_title}${rule.variant_label ? ` (${rule.variant_label})` : ""} is back in stock!`;
         email = backInStockEmail(rule.product_title, rule.variant_label ?? undefined);
       }
     } else {
@@ -74,18 +74,18 @@ export async function GET(request: Request) {
       if (rule.target_price != null && min <= rule.target_price) {
         fired = true;
         eventKey = `price_drop:${rule.target_price}:${min}`;
-        pushBody = `${rule.product_title} fiyatı düştü: ${min} TL`;
+        pushBody = `${rule.product_title} price dropped: ${min} TRY`;
         email = priceDropEmail(rule.product_title, min, rule.variant_label ?? undefined);
       }
     }
 
     if (!fired) continue;
 
-    // Tekrar engelleme: aynı olay daha önce gönderildiyse atla.
+    // Dedup: skip if this exact event was already sent.
     const { error: logErr } = await admin
       .from("notification_log")
       .insert({ notification_id: rule.id, event_key: eventKey });
-    if (logErr) continue; // unique ihlali = zaten gönderilmiş
+    if (logErr) continue; // unique violation = already sent
 
     triggered++;
 
@@ -101,7 +101,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // E-posta
+    // Email
     if ((rule.channel === "email" || rule.channel === "both") && email) {
       const { data: u } = await admin.auth.admin.getUserById(rule.user_id);
       if (u?.user?.email) await sendEmail(u.user.email, email.subject, email.html);

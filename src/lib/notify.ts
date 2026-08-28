@@ -2,7 +2,7 @@ import "server-only";
 import webpush from "web-push";
 import { Resend } from "resend";
 
-// Push + e-posta gönderimi. Anahtar yoksa sessizce atlar (demo modu).
+// Push + email delivery. Silently skips if no key is configured (demo mode).
 
 let vapidReady = false;
 function ensureVapid(): boolean {
@@ -67,10 +67,10 @@ export async function sendEmail(
 export function backInStockEmail(product: string, variant?: string): { subject: string; html: string } {
   const what = variant ? `${product} (${variant})` : product;
   return {
-    subject: `🎉 ${what} tekrar stokta!`,
+    subject: `🎉 ${what} is back in stock!`,
     html: `<div style="font-family:sans-serif">
-      <h2>🎉 Aradığın ürün stokta!</h2>
-      <p><b>${what}</b> tekrar stoğa girdi. Tükenmeden incele.</p>
+      <h2>🎉 The product you're looking for is in stock!</h2>
+      <p><b>${what}</b> is back in stock. Check it out before it's gone.</p>
       <p style="color:#888">StockViewer</p>
     </div>`,
   };
@@ -79,10 +79,10 @@ export function backInStockEmail(product: string, variant?: string): { subject: 
 export function priceDropEmail(product: string, price: number, variant?: string): { subject: string; html: string } {
   const what = variant ? `${product} (${variant})` : product;
   return {
-    subject: `💸 ${what} fiyatı düştü!`,
+    subject: `💸 ${what} price dropped!`,
     html: `<div style="font-family:sans-serif">
-      <h2>💸 Fiyat düştü!</h2>
-      <p><b>${what}</b> artık <b>${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(price)}</b>.</p>
+      <h2>💸 Price drop!</h2>
+      <p><b>${what}</b> is now <b>${new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 }).format(price)}</b>.</p>
       <p style="color:#888">StockViewer</p>
     </div>`,
   };

@@ -8,9 +8,9 @@ import { NotifyDialog, type NotifyTarget } from "./notify-dialog";
 const EXAMPLES = [
   "Nike Air Max 90",
   "Oversize sweatshirt",
-  "Deri omuz çantası",
-  "Mom jean",
-  "Beyaz sneaker",
+  "Leather shoulder bag",
+  "Mom jeans",
+  "White sneakers",
 ];
 
 export function SearchExperience() {
@@ -49,16 +49,16 @@ export function SearchExperience() {
 
   return (
     <div className="space-y-8">
-      {/* Hero + arama */}
+      {/* Hero + search */}
       <section className="text-center pt-6 sm:pt-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-          Aradığın ürün{" "}
-          <span className="text-primary">hangi sitede stokta?</span>
+          Which site has{" "}
+          <span className="text-primary">the product you want in stock?</span>
         </h1>
         <p className="mt-3 text-muted max-w-xl mx-auto">
-          Kıyafet, ayakkabı ve çanta… Bir kez ara, ürünün satıldığı tüm sitelerde
-          fiyatı ve <b>beden/numara bazında stoğu</b> tek ekranda gör. Tükendiyse
-          bildirim aç, gelince haber verelim.
+          Clothing, shoes, and bags… Search once, and see the price and{" "}
+          <b>stock by size/number</b> across every site that sells it, on one
+          screen. If it&apos;s out of stock, turn on a notification and we&apos;ll let you know.
         </p>
 
         <form
@@ -68,13 +68,13 @@ export function SearchExperience() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ürün adı — ör. Nike Air Max 90"
+            placeholder="Product name — e.g. Nike Air Max 90"
             className="flex-1 rounded-2xl bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary/40"
           />
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="Ürün kodu (ops.)"
+            placeholder="Product code (optional)"
             className="sm:w-44 rounded-2xl bg-background px-4 py-3 outline-none focus:ring-2 focus:ring-primary/40"
           />
           <button
@@ -82,13 +82,13 @@ export function SearchExperience() {
             disabled={loading || !query.trim()}
             className="rounded-2xl bg-primary text-white px-6 py-3 font-semibold shadow-sm shadow-primary/30 hover:bg-primary-strong disabled:opacity-50"
           >
-            {loading ? "Aranıyor…" : "Ara"}
+            {loading ? "Searching…" : "Search"}
           </button>
         </form>
 
         {!results && (
           <div className="mt-4 flex items-center justify-center gap-2 flex-wrap text-sm">
-            <span className="text-muted">Deneyin:</span>
+            <span className="text-muted">Try:</span>
             {EXAMPLES.map((ex) => (
               <button
                 key={ex}
@@ -105,18 +105,18 @@ export function SearchExperience() {
         )}
       </section>
 
-      {/* Sonuçlar */}
+      {/* Results */}
       {loading && <ResultsSkeleton />}
 
       {!loading && results && (
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">
-              “{searched}” için{" "}
-              <span className="text-primary">{results.length} sonuç</span>
+              <span className="text-primary">{results.length} results</span>{" "}
+              for &ldquo;{searched}&rdquo;
             </h2>
             {results.length > 0 && (
-              <span className="text-sm text-muted">en ucuzdan sıralı</span>
+              <span className="text-sm text-muted">sorted by cheapest first</span>
             )}
           </div>
 
@@ -165,9 +165,9 @@ function EmptyResults({ query }: { query: string }) {
   return (
     <div className="text-center py-16 rounded-3xl border border-dashed border-border bg-surface/60">
       <div className="text-5xl mb-3">🔎</div>
-      <p className="font-semibold">“{query}” hiçbir sitede bulunamadı</p>
+      <p className="font-semibold">&ldquo;{query}&rdquo; wasn&apos;t found on any site</p>
       <p className="text-sm text-muted mt-1">
-        Farklı bir ifade veya ürün kodu deneyin.
+        Try a different search term or product code.
       </p>
     </div>
   );

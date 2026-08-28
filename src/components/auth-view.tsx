@@ -23,7 +23,7 @@ export function AuthView() {
       if (mode === "signup") {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) setMsg(error.message);
-        else setMsg("Kayıt başarılı! E-postanı doğrula, sonra giriş yap.");
+        else setMsg("Sign-up successful! Verify your email, then sign in.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) setMsg(error.message);
@@ -38,13 +38,13 @@ export function AuthView() {
     return (
       <div className="max-w-md mx-auto text-center py-16">
         <div className="text-5xl mb-3">👋</div>
-        <p className="font-semibold">Giriş yaptın</p>
+        <p className="font-semibold">You&apos;re signed in</p>
         <p className="text-sm text-muted mt-1 mb-4">{user.email}</p>
         <Link
           href="/dashboard"
           className="inline-flex rounded-full bg-primary text-white px-5 py-2.5 font-semibold shadow-sm shadow-primary/30 hover:bg-primary-strong"
         >
-          Takip listeme git
+          Go to my tracked list
         </Link>
       </div>
     );
@@ -54,16 +54,16 @@ export function AuthView() {
     <div className="max-w-md mx-auto py-10">
       <div className="rounded-3xl bg-surface border border-border shadow-sm p-6">
         <h1 className="text-2xl font-extrabold text-center">
-          {mode === "signin" ? "Giriş Yap" : "Hesap Oluştur"}
+          {mode === "signin" ? "Sign In" : "Create Account"}
         </h1>
         <p className="text-sm text-muted text-center mt-1 mb-6">
-          Takip listen ve bildirimlerin tüm cihazlarında senkron olsun.
+          Keep your tracked list and notifications in sync across all your devices.
         </p>
 
         {!configured && (
           <div className="mb-5 rounded-2xl bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-            ⚙️ Hesap özelliği için Supabase yapılandırılmamış. Şu an <b>demo modundasın</b> —
-            takip ve bildirimler bu tarayıcıda yerel olarak saklanıyor.
+            ⚙️ Supabase isn&apos;t configured for the account feature. You&apos;re currently in <b>demo mode</b> —
+            tracking and notifications are stored locally in this browser.
           </div>
         )}
 
@@ -73,7 +73,7 @@ export function AuthView() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-posta"
+            placeholder="Email"
             disabled={!configured}
             className="w-full rounded-xl border border-border bg-background px-3 py-2.5 outline-none focus:border-primary disabled:opacity-50"
           />
@@ -83,7 +83,7 @@ export function AuthView() {
             minLength={6}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Şifre (en az 6 karakter)"
+            placeholder="Password (at least 6 characters)"
             disabled={!configured}
             className="w-full rounded-xl border border-border bg-background px-3 py-2.5 outline-none focus:border-primary disabled:opacity-50"
           />
@@ -92,7 +92,7 @@ export function AuthView() {
             disabled={!configured || busy}
             className="w-full rounded-xl bg-primary text-white py-2.5 font-semibold shadow-sm shadow-primary/30 hover:bg-primary-strong disabled:opacity-50"
           >
-            {busy ? "…" : mode === "signin" ? "Giriş Yap" : "Kayıt Ol"}
+            {busy ? "…" : mode === "signin" ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
@@ -106,14 +106,14 @@ export function AuthView() {
           className="mt-4 w-full text-sm text-primary hover:underline"
         >
           {mode === "signin"
-            ? "Hesabın yok mu? Kayıt ol"
-            : "Zaten hesabın var mı? Giriş yap"}
+            ? "Don't have an account? Sign up"
+            : "Already have an account? Sign in"}
         </button>
       </div>
 
       <p className="text-center text-sm text-muted mt-4">
         <Link href="/" className="hover:text-foreground">
-          ← Aramaya dön
+          ← Back to search
         </Link>
       </p>
     </div>

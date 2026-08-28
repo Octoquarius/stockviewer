@@ -13,9 +13,9 @@ export function NotificationsView() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-extrabold">Bildirimlerim</h1>
+        <h1 className="text-2xl font-extrabold">My Notifications</h1>
         <p className="text-muted text-sm mt-1">
-          {active.length} aktif kural · stok gelince ya da fiyat düşünce haber veririz.
+          {active.length} active rules · we&apos;ll let you know when stock arrives or the price drops.
         </p>
       </div>
 
@@ -24,15 +24,15 @@ export function NotificationsView() {
       {rules.length === 0 ? (
         <div className="text-center py-20 rounded-3xl border border-dashed border-border bg-surface/60">
           <div className="text-5xl mb-3">🔔</div>
-          <p className="font-semibold">Henüz bildirim kuralın yok</p>
+          <p className="font-semibold">You don&apos;t have any notification rules yet</p>
           <p className="text-sm text-muted mt-1 mb-4">
-            Bir üründe “Bildirim Aç” veya tükenmiş bir bedene tıklayarak kural oluştur.
+            Create a rule by clicking &ldquo;Notify&rdquo; on a product or on an out-of-stock size.
           </p>
           <Link
             href="/"
             className="inline-flex rounded-full bg-primary text-white px-5 py-2.5 font-semibold shadow-sm shadow-primary/30 hover:bg-primary-strong"
           >
-            Ürün ara
+            Search for products
           </Link>
         </div>
       ) : (
@@ -62,14 +62,14 @@ export function NotificationsView() {
                   </p>
                   <p className="text-sm text-muted">
                     {r.triggerType === "back_in_stock"
-                      ? "📦 Stok gelince"
-                      : `💸 Fiyat ${r.targetPrice ? formatPrice(r.targetPrice) + " altına inince" : "düşünce"}`}
+                      ? "📦 When it's back in stock"
+                      : `💸 When the price ${r.targetPrice ? "drops below " + formatPrice(r.targetPrice) : "drops"}`}
                     {" · "}
                     {r.channel === "both"
-                      ? "Push + E-posta"
+                      ? "Push + Email"
                       : r.channel === "push"
                         ? "Push"
-                        : "E-posta"}
+                        : "Email"}
                   </p>
                 </div>
 
@@ -78,7 +78,7 @@ export function NotificationsView() {
                   className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${
                     r.isActive ? "bg-primary" : "bg-border"
                   }`}
-                  title={r.isActive ? "Aktif" : "Pasif"}
+                  title={r.isActive ? "Active" : "Inactive"}
                 >
                   <span
                     className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
@@ -90,7 +90,7 @@ export function NotificationsView() {
                 <button
                   onClick={() => removeRule(r.id)}
                   className="shrink-0 text-muted hover:text-[var(--out-stock)] px-1"
-                  title="Sil"
+                  title="Delete"
                 >
                   ✕
                 </button>
